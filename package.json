@@ -10,5 +10,8 @@
   },
   "dependencies": {
     "airtable": "^0.12.2"
+  },
+  "bin": {
+    "airtable": "src/cli.ts"
   }
 }
