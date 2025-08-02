@@ -1,4 +1,5 @@
 import type Airtable from "airtable";
+import type { WrappedFormula } from "./formulas";
 import type {
   AirtableTable,
   FieldDefinition,
@@ -13,8 +14,11 @@ export class SelectQuery<T extends AirtableTable>
 
   constructor(private base: Airtable.Base, private table: T) {}
 
-  public filter(filterFormula: string): this {
-    this._filterByFormula = filterFormula;
+  public filter(filterFormula: WrappedFormula | string): this {
+    this._filterByFormula =
+      typeof filterFormula === "object"
+        ? filterFormula._formula
+        : filterFormula;
     return this;
   }
 

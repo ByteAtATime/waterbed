@@ -1,6 +1,6 @@
 export type FieldType = "text" | "number" | "boolean";
 
-export type FieldDefinition<T extends FieldType> = {
+export type FieldDefinition<T extends FieldType = FieldType> = {
   _type: T;
   airtableFieldName: string;
 };
