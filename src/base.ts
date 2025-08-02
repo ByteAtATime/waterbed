@@ -1,5 +1,5 @@
 import Airtable from "airtable";
-import { SelectQueryBuilder } from "./select";
+import { SelectQueryBuilder, type FieldsSelection } from "./select";
 
 export type BaseConfig = {
   apiKey: string;
@@ -20,8 +20,12 @@ export class Base {
     this.base = this.airtable.base(this.baseId);
   }
 
-  public select() {
-    return new SelectQueryBuilder(this.base);
+  public select<TSelection extends FieldsSelection>(
+    fields: TSelection
+  ): SelectQueryBuilder<TSelection>;
+  public select(): SelectQueryBuilder<undefined>;
+  public select<TSelection extends FieldsSelection>(fields?: TSelection) {
+    return new SelectQueryBuilder(this.base, fields);
   }
 }
 

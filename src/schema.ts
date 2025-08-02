@@ -26,6 +26,14 @@ export type InferSelectModel<T extends AirtableTableDef> = {
   [K in Extract<keyof T, string>]+?: InferFieldType<T[K]["_type"]>;
 };
 
+export type InferPartialSelectModel<
+  TSelection extends Record<string, FieldDefinition>
+> = {
+  id: string;
+} & {
+  [K in keyof TSelection]+?: InferFieldType<TSelection[K]["_type"]>;
+};
+
 export const text = (airtableFieldName: string): FieldDefinition<"text"> => ({
   _type: "text",
   airtableFieldName,

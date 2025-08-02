@@ -4,17 +4,33 @@ import {
   type AirtableTable,
   type FieldDefinition,
   type FieldType,
+  type InferPartialSelectModel,
   type InferSelectModel,
   tableNameSymbol,
 } from "./schema";
 import type { Prettify } from "./utils";
 
-export class SelectQuery<T extends AirtableTable>
-  implements PromiseLike<Prettify<InferSelectModel<T>>[]>
+export type FieldsSelection = Record<string, FieldDefinition>;
+
+type SelectResult<
+  TTable extends AirtableTable,
+  TSelection extends FieldsSelection | undefined
+> = TSelection extends FieldsSelection
+  ? InferPartialSelectModel<TSelection>
+  : InferSelectModel<TTable>;
+
+export class SelectQuery<
+  TTable extends AirtableTable,
+  TSelection extends FieldsSelection | undefined
+> implements PromiseLike<Prettify<SelectResult<TTable, TSelection>>[]>
 {
   private _filterByFormula: string | null = null;
 
-  constructor(private base: Airtable.Base, private table: T) {}
+  constructor(
+    private base: Airtable.Base,
+    private table: TTable,
+    private fields?: TSelection
+  ) {}
 
   public filter(filterFormula: WrappedFormula | string): this {
     this._filterByFormula =
@@ -24,36 +40,50 @@ export class SelectQuery<T extends AirtableTable>
     return this;
   }
 
-  private async execute(): Promise<Prettify<InferSelectModel<T>>[]> {
+  private async execute(): Promise<
+    Prettify<SelectResult<TTable, TSelection>>[]
+  > {
     const tableName = this.table[tableNameSymbol];
+
+    const { [tableNameSymbol]: _, ...schemaFields } = this.table;
+    const selection = this.fields ?? schemaFields;
+
+    const fieldsToSelectInAirtable = Object.values(selection).map(
+      (fieldDef: any) => fieldDef.airtableFieldName
+    );
 
     const query = this.base(tableName).select({
       filterByFormula: this._filterByFormula ?? undefined,
+      fields:
+        fieldsToSelectInAirtable.length > 0
+          ? fieldsToSelectInAirtable
+          : undefined,
     });
 
     const records = await query.all();
-    const table = this.table;
 
     return records.map((record) => {
-      const { [tableNameSymbol]: _, ...fields } = table;
       const result: { [key: string]: any } = { id: record.id };
+      const fieldsToMap = this.fields ?? schemaFields;
 
-      for (const key in fields) {
-        const fieldDef = fields[
-          key as keyof typeof fields
+      for (const key in fieldsToMap) {
+        const fieldDef = (fieldsToMap as any)[
+          key
         ] as FieldDefinition<FieldType>;
-
         result[key] = record.get(fieldDef.airtableFieldName);
       }
 
-      return result as Prettify<InferSelectModel<T>>;
+      return result as Prettify<SelectResult<TTable, TSelection>>;
     });
   }
 
-  public then<TResult1 = Prettify<InferSelectModel<T>>[], TResult2 = never>(
+  public then<
+    TResult1 = Prettify<SelectResult<TTable, TSelection>>[],
+    TResult2 = never
+  >(
     onfulfilled?:
       | ((
-          value: Prettify<InferSelectModel<T>>[]
+          value: Prettify<SelectResult<TTable, TSelection>>[]
         ) => TResult1 | PromiseLike<TResult1>)
       | undefined
       | null,
@@ -66,10 +96,14 @@ export class SelectQuery<T extends AirtableTable>
   }
 }
 
-export class SelectQueryBuilder {
-  constructor(private base: Airtable.Base) {}
+export class SelectQueryBuilder<
+  TSelection extends FieldsSelection | undefined
+> {
+  constructor(private base: Airtable.Base, private fields?: TSelection) {}
 
-  public from<T extends AirtableTable>(table: T): SelectQuery<T> {
-    return new SelectQuery(this.base, table);
+  public from<TTable extends AirtableTable>(
+    table: TTable
+  ): SelectQuery<TTable, TSelection> {
+    return new SelectQuery(this.base, table, this.fields);
   }
 }
