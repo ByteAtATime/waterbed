@@ -7,9 +7,10 @@ import {
   type InferSelectModel,
   tableNameSymbol,
 } from "./schema";
+import type { Prettify } from "./utils";
 
 export class SelectQuery<T extends AirtableTable>
-  implements PromiseLike<InferSelectModel<T>[]>
+  implements PromiseLike<Prettify<InferSelectModel<T>>[]>
 {
   private _filterByFormula: string | null = null;
 
@@ -23,8 +24,7 @@ export class SelectQuery<T extends AirtableTable>
     return this;
   }
 
-  private async execute(): Promise<InferSelectModel<T>[]> {
-    // Use the symbol to get the table name
+  private async execute(): Promise<Prettify<InferSelectModel<T>>[]> {
     const tableName = this.table[tableNameSymbol];
 
     const query = this.base(tableName).select({
@@ -46,13 +46,15 @@ export class SelectQuery<T extends AirtableTable>
         result[key] = record.get(fieldDef.airtableFieldName);
       }
 
-      return result as InferSelectModel<T>;
+      return result as Prettify<InferSelectModel<T>>;
     });
   }
 
-  public then<TResult1 = InferSelectModel<T>[], TResult2 = never>(
+  public then<TResult1 = Prettify<InferSelectModel<T>>[], TResult2 = never>(
     onfulfilled?:
-      | ((value: InferSelectModel<T>[]) => TResult1 | PromiseLike<TResult1>)
+      | ((
+          value: Prettify<InferSelectModel<T>>[]
+        ) => TResult1 | PromiseLike<TResult1>)
       | undefined
       | null,
     onrejected?:
