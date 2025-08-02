@@ -1,4 +1,5 @@
 import Airtable from "airtable";
+import { SelectQueryBuilder } from "./select";
 
 export type BaseConfig = {
   apiKey: string;
@@ -17,6 +18,10 @@ export class Base {
       apiKey: config.apiKey,
     });
     this.base = this.airtable.base(this.baseId);
+  }
+
+  public select() {
+    return new SelectQueryBuilder(this.base);
   }
 }
 
