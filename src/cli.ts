@@ -3,7 +3,7 @@
 import fs from "fs/promises";
 import path from "path";
 
-const OUTPUT_FILE_PATH = path.join(import.meta.dir, "src/generated-schema.ts");
+const OUTPUT_FILE_PATH = path.join(process.cwd(), "src/generated-schema.ts");
 
 function toCamelCase(str: string): string {
   return str
