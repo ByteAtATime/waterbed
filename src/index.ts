@@ -1,2 +1,2 @@
 export * from "./schema";
-export { type BaseConfig, Base } from "./base";
+export { type BaseConfig, base } from "./base";
