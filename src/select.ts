@@ -1,10 +1,11 @@
 import type Airtable from "airtable";
 import type { WrappedFormula } from "./formulas";
-import type {
-  AirtableTable,
-  FieldDefinition,
-  FieldType,
-  InferSelectModel,
+import {
+  type AirtableTable,
+  type FieldDefinition,
+  type FieldType,
+  type InferSelectModel,
+  tableNameSymbol,
 } from "./schema";
 
 export class SelectQuery<T extends AirtableTable>
@@ -23,7 +24,8 @@ export class SelectQuery<T extends AirtableTable>
   }
 
   private async execute(): Promise<InferSelectModel<T>[]> {
-    const tableName = this.table._tableName;
+    // Use the symbol to get the table name
+    const tableName = this.table[tableNameSymbol];
 
     const query = this.base(tableName).select({
       filterByFormula: this._filterByFormula ?? undefined,
@@ -33,7 +35,7 @@ export class SelectQuery<T extends AirtableTable>
     const table = this.table;
 
     return records.map((record) => {
-      const { _tableName, ...fields } = table;
+      const { [tableNameSymbol]: _, ...fields } = table;
       const result: { [key: string]: any } = { id: record.id };
 
       for (const key in fields) {

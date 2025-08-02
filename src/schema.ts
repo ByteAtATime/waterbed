@@ -15,13 +15,15 @@ type InferFieldType<T extends FieldType> = T extends keyof FieldTypeMap
   ? FieldTypeMap[T]
   : never;
 
+export const tableNameSymbol = Symbol("tableName");
+
 export type AirtableTableDef = Record<string, FieldDefinition<FieldType>>;
-export type AirtableTable = AirtableTableDef & { _tableName: string };
+export type AirtableTable = AirtableTableDef & { [tableNameSymbol]: string };
 
 export type InferSelectModel<T extends AirtableTableDef> = {
   id: string;
 } & {
-  [K in keyof T]+?: InferFieldType<T[K]["_type"]>;
+  [K in Extract<keyof T, string>]+?: InferFieldType<T[K]["_type"]>;
 };
 
 export const text = (airtableFieldName: string): FieldDefinition<"text"> => ({
@@ -47,13 +49,13 @@ export const createAirtableSchema = <
   T extends Record<string, AirtableTableDef>
 >(
   schema: T
-): { [K in keyof T]: T[K] & { _tableName: K & string } } => {
+): { [K in keyof T]: T[K] & { [tableNameSymbol]: K & string } } => {
   const result: any = {};
   for (const tableName in schema) {
     if (Object.prototype.hasOwnProperty.call(schema, tableName)) {
       result[tableName] = {
         ...schema[tableName],
-        _tableName: tableName,
+        [tableNameSymbol]: tableName,
       };
     }
   }
