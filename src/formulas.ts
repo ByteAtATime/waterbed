@@ -4,51 +4,37 @@ export type WrappedFormula = { _formula: string };
 
 export type FormulaChunk = FieldDefinition | WrappedFormula | string | number;
 
-function formula(
-  strings: TemplateStringsArray,
-  ...params: FormulaChunk[]
-): WrappedFormula {
-  const queryChunks: (string | number)[] = [];
-
-  const processChunk = (chunk: FormulaChunk) => {
-    if (typeof chunk === "object" && "_type" in chunk) {
-      queryChunks.push(`{${chunk.airtableFieldName}}`);
-    } else if (typeof chunk === "object" && "_formula" in chunk) {
-      queryChunks.push(chunk._formula);
-    } else if (typeof chunk === "string") {
-      queryChunks.push(`'${chunk}'`);
-    } else {
-      queryChunks.push(chunk);
+function stringifyChunk(chunk: FormulaChunk): string {
+  if (typeof chunk === "object") {
+    if ("_type" in chunk) {
+      return `{${chunk.airtableFieldName}}`;
     }
-  };
-
-  strings.forEach((str, i) => {
-    queryChunks.push(str);
-    if (i < params.length) {
-      processChunk(params[i]!);
+    if ("_formula" in chunk) {
+      return chunk._formula;
     }
-  });
-
-  return { _formula: queryChunks.join("") };
-}
-
-const processChunkToString = (chunk: FormulaChunk): string => {
-  if (typeof chunk === "object" && "_type" in chunk) {
-    return `{${chunk.airtableFieldName}}`;
-  }
-  if (typeof chunk === "object" && "_formula" in chunk) {
-    return chunk._formula;
   }
   if (typeof chunk === "string") {
     return `'${chunk}'`;
   }
   return String(chunk);
-};
+}
+
+function formula(
+  strings: TemplateStringsArray,
+  ...params: FormulaChunk[]
+): WrappedFormula {
+  let result = strings[0]!;
+  for (let i = 0; i < params.length; i++) {
+    result += stringifyChunk(params[i]!);
+    result += strings[i + 1]!;
+  }
+  return { _formula: result };
+}
 
 const createVariadicFn =
   (name: string) =>
   (...chunks: FormulaChunk[]): WrappedFormula => {
-    const inner = chunks.map(processChunkToString).join(", ");
+    const inner = chunks.map(stringifyChunk).join(", ");
     return { _formula: `${name}(${inner})` };
   };
 
