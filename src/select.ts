@@ -9,6 +9,7 @@ import {
   tableNameSymbol,
 } from "./schema";
 import type { Prettify } from "./utils";
+import type { OrderByCondition } from "./sort";
 
 export type FieldsSelection = Record<string, FieldDefinition>;
 
@@ -25,6 +26,7 @@ export class SelectQuery<
 > implements PromiseLike<Prettify<SelectResult<TTable, TSelection>>[]>
 {
   private _filterByFormula: string | null = null;
+  private _sorts: OrderByCondition[] = [];
 
   constructor(
     private base: Airtable.Base,
@@ -40,6 +42,11 @@ export class SelectQuery<
     return this;
   }
 
+  public orderBy(...sorts: OrderByCondition[]): this {
+    this._sorts.push(...sorts);
+    return this;
+  }
+
   private async execute(): Promise<
     Prettify<SelectResult<TTable, TSelection>>[]
   > {
@@ -48,12 +55,18 @@ export class SelectQuery<
     const { [tableNameSymbol]: _, ...schemaFields } = this.table;
     const selection = this.fields ?? schemaFields;
 
+    const airtableSorts = this._sorts.map((s) => ({
+      field: s._field.airtableFieldName,
+      direction: s._direction,
+    }));
+
     const fieldsToSelectInAirtable = Object.values(selection).map(
       (fieldDef: any) => fieldDef.airtableFieldName
     );
 
     const query = this.base(tableName).select({
       filterByFormula: this._filterByFormula ?? undefined,
+      ...(airtableSorts.length > 0 ? { sort: airtableSorts } : undefined),
       fields:
         fieldsToSelectInAirtable.length > 0
           ? fieldsToSelectInAirtable
