@@ -71,7 +71,9 @@ export class SelectQuery<
     );
 
     const query = this.base(tableName).select({
-      filterByFormula: this._filterByFormula ?? undefined,
+      ...(this._filterByFormula
+        ? { filterByFormula: this._filterByFormula }
+        : undefined),
       ...(airtableSorts.length > 0 ? { sort: airtableSorts } : undefined),
       fields:
         fieldsToSelectInAirtable.length > 0
