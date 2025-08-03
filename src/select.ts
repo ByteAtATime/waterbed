@@ -27,6 +27,7 @@ export class SelectQuery<
 {
   private _filterByFormula: string | null = null;
   private _sorts: OrderByCondition[] = [];
+  private _view: string | null = null;
 
   constructor(
     private base: Airtable.Base,
@@ -44,6 +45,11 @@ export class SelectQuery<
 
   public orderBy(...sorts: OrderByCondition[]): this {
     this._sorts.push(...sorts);
+    return this;
+  }
+
+  public view(viewName: string): this {
+    this._view = viewName;
     return this;
   }
 
@@ -71,6 +77,7 @@ export class SelectQuery<
         fieldsToSelectInAirtable.length > 0
           ? fieldsToSelectInAirtable
           : undefined,
+      ...(this._view ? { view: this._view } : undefined),
     });
 
     const records = await query.all();
