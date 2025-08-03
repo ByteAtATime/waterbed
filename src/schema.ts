@@ -1,14 +1,46 @@
-export type FieldType = "text" | "number" | "boolean";
+import type { Prettify } from "./utils";
+
+export type FieldType =
+  | "text"
+  | "number"
+  | "boolean"
+  | "attachment"
+  | "multipleAttachments";
 
 export type FieldDefinition<T extends FieldType = FieldType> = {
   _type: T;
   airtableFieldName: string;
 };
 
+type Thumbnail = {
+  url: string;
+  width: number;
+  height: number;
+};
+
+type Thumbnails = {
+  small?: Thumbnail;
+  large?: Thumbnail;
+  full?: Thumbnail;
+};
+
+type Attachment = {
+  id: string;
+  url: string;
+  filename: string;
+  size: number;
+  type: string;
+  width?: number;
+  height?: number;
+  thumbnails?: Thumbnails;
+};
+
 type FieldTypeMap = {
   text: string;
   number: number;
   boolean: boolean;
+  attachment: Prettify<Attachment>;
+  multipleAttachments: Prettify<Attachment>[];
 };
 
 type InferFieldType<T extends FieldType> = T extends keyof FieldTypeMap
@@ -50,6 +82,20 @@ export const boolean = (
   airtableFieldName: string
 ): FieldDefinition<"boolean"> => ({
   _type: "boolean",
+  airtableFieldName,
+});
+
+export const attachment = (
+  airtableFieldName: string
+): FieldDefinition<"attachment"> => ({
+  _type: "attachment",
+  airtableFieldName,
+});
+
+export const multipleAttachments = (
+  airtableFieldName: string
+): FieldDefinition<"multipleAttachments"> => ({
+  _type: "multipleAttachments",
   airtableFieldName,
 });
 
