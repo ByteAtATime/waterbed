@@ -8,10 +8,13 @@ const OUTPUT_FILE_PATH = path.join(process.cwd(), "src/generated-schema.ts");
 function toCamelCase(str: string): string {
   return str
     .replace(/[^a-zA-Z0-9\s]/g, "")
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
-      index === 0 ? word.toLowerCase() : word.toUpperCase()
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word, index) =>
+      index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
     )
-    .replace(/\s+/g, "");
+    .join("");
 }
 
 interface AirtableField {
