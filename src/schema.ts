@@ -108,19 +108,12 @@ export const multipleAttachments = (
   airtableFieldName,
 });
 
-export const createAirtableSchema = <
-  T extends Record<string, AirtableTableDef>
->(
-  schema: T
-): { [K in keyof T]: T[K] & { [tableNameSymbol]: K & string } } => {
-  const result: any = {};
-  for (const tableName in schema) {
-    if (Object.prototype.hasOwnProperty.call(schema, tableName)) {
-      result[tableName] = {
-        ...schema[tableName],
-        [tableNameSymbol]: tableName,
-      };
-    }
-  }
-  return result;
+export const table = <T extends AirtableTableDef>(
+  airtableTableName: string,
+  columns: T
+): T & { [tableNameSymbol]: string } => {
+  return {
+    ...columns,
+    [tableNameSymbol]: airtableTableName,
+  };
 };
