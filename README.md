@@ -1,4 +1,4 @@
-# @byteatatime/airtable
+# @byteatatime/waterbed
 
 To install dependencies:
 

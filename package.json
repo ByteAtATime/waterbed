@@ -1,5 +1,5 @@
 {
-  "name": "@byteatatime/airtable",
+  "name": "@byteatatime/waterbed",
   "module": "src/index.ts",
   "type": "module",
   "exports": {
@@ -15,6 +15,6 @@
     "airtable": "^0.12.2"
   },
   "bin": {
-    "airtable": "src/cli.ts"
+    "waterbed": "src/cli.ts"
   }
 }
