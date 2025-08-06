@@ -7,6 +7,7 @@ import {
   type InferPartialSelectModel,
   type InferSelectModel,
   tableNameSymbol,
+  type AirtableTableDef,
 } from "./schema";
 import type { Prettify } from "./utils";
 import type { OrderByCondition } from "./sort";
@@ -58,7 +59,7 @@ export class SelectQuery<
   > {
     const tableName = this.table[tableNameSymbol];
 
-    const { [tableNameSymbol]: _, ...schemaFields } = this.table;
+    const { [tableNameSymbol]: _, views, ...schemaFields } = this.table;
     const selection = this.fields ?? schemaFields;
 
     const airtableSorts = this._sorts.map((s) => ({

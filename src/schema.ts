@@ -49,13 +49,22 @@ type InferFieldType<T extends FieldType> = T extends keyof FieldTypeMap
 
 export const tableNameSymbol = Symbol("tableName");
 
-export type AirtableTableDef = Record<string, FieldDefinition<FieldType>>;
+export type AirtableTableDef = Record<
+  string,
+  FieldDefinition<FieldType> | Record<string, string>
+>;
 export type AirtableTable = AirtableTableDef & { [tableNameSymbol]: string };
+
+type FieldsOf<T extends AirtableTableDef> = {
+  [K in keyof T as T[K] extends FieldDefinition ? K : never]: T[K];
+};
+
+type GetFieldDefType<F> = F extends FieldDefinition<infer U> ? U : never;
 
 export type InferSelectModel<T extends AirtableTableDef> = {
   id: string;
 } & {
-  [K in Extract<keyof T, string>]+?: InferFieldType<T[K]["_type"]>;
+  [K in keyof FieldsOf<T>]+?: InferFieldType<GetFieldDefType<FieldsOf<T>[K]>>;
 };
 
 export type InferPartialSelectModel<
