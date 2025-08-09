@@ -3,10 +3,13 @@
 import fs from "fs/promises";
 import path from "path";
 
-const OUTPUT_FILE_PATH = path.join(process.cwd(), "src/generated-schema.ts");
+const outputPathArg = process.argv[2];
+const OUTPUT_FILE_PATH = outputPathArg
+  ? path.resolve(process.cwd(), outputPathArg)
+  : path.join(process.cwd(), "src/generated-schema.ts");
 
-function toCamelCase(str: string): string {
-  return str
+const toCamelCase = (str: string): string =>
+  str
     .replace(/[^a-zA-Z0-9\s]/g, "")
     .trim()
     .toLowerCase()
@@ -15,9 +18,8 @@ function toCamelCase(str: string): string {
       index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
     )
     .join("");
-}
 
-interface AirtableField {
+type AirtableField = {
   id: string;
   name: string;
   description?: string;
@@ -28,7 +30,7 @@ interface AirtableField {
     prefersSingleRecordLink?: boolean;
     inverseLinkFieldId?: string;
   };
-}
+};
 
 interface AirtableTable {
   id: string;
