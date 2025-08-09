@@ -14,7 +14,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node",
+    "build": "bun build src/index.ts --outdir dist --target node --minify",
     "build:types": "tsc --project tsconfig.build.json --emitDeclarationOnly --outDir dist",
     "prepublishOnly": "bun run build && bun run build:types",
     "test": "bun test"
