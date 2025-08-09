@@ -1,9 +1,19 @@
 {
-  "name": "@byteatatime/waterbed",
-  "module": "src/index.ts",
-  "type": "module",
+  "name": "waterbed",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node",
+    "build:types": "tsc --project tsconfig.build.json --emitDeclarationOnly --outDir dist",
+    "prepublishOnly": "bun run build && bun run build:types",
+    "test": "bun test"
   },
   "devDependencies": {
     "@types/bun": "latest"
